@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>J-Counter Ultimate</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding-bottom: 50px; }
+        .header { background: #333; padding: 10px; border-bottom: 2px solid #ed1c24; position: sticky; top: 0; z-index: 100; }
+        select { width: 95%; padding: 12px; font-size: 1rem; border-radius: 5px; background: #444; color: white; border: 1px solid #666; }
+        
+        .display { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 10px; background: #252525; }
+        .data-box { background: #333; padding: 5px; border-radius: 5px; border: 1px solid #444; }
+        .label { font-size: 0.65rem; color: #aaa; display: block; }
+        .value { font-size: 1rem; font-weight: bold; }
+
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 10px; }
+        button { padding: 15px; font-size: 1rem; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; touch-action: manipulation; }
+        
+        .btn-game { background: #555; }
+        .btn-bb { background: #d32f2f; height: 80px; }
+        .btn-rb { background: #1976d2; height: 80px; }
+        .btn-grape { background: #5d2d91; height: 100px; }
+        .btn-cherry { background: #c2185b; height: 100px; }
+        
+        .prediction-box { margin: 10px; padding: 15px; background: #000; border: 2px solid #ed1c24; border-radius: 10px; }
+        .pred-grid { display: grid; grid-template-columns: repeat(4, 1fr); font-size: 0.7rem; color: #ccc; margin-bottom: 10px; }
+        .total-pred { font-size: 2.2rem; color: #ffeb3b; font-weight: bold; }
+        .reset-btn { margin-top: 10px; background: none; border: 1px solid #444; color: #666; padding: 8px; width: 40%; font-size: 0.7rem; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <select id="machine-select" onchange="updateDisplay()">
+        <option value="myjug5">マイジャグラーⅤ</option>
+        <option value="gogo3">ゴーゴージャグラー３</option>
+        <option value="neo-im">ネオアイムジャグラー</option>
+        <option value="funky2">ファンキージャグラー２</option>
+        <option value="happy3">ハッピージャグラーVⅢ</option>
+        <option value="miracle">ミラクジャグラー(新)</option>
+        <option value="girls">ジャグラーガールズSS</option>
+    </select>
+</div>
+
+<div class="display">
+    <div class="data-box"><span class="label">G数</span><span id="game-count" class="value">0</span></div>
+    <div class="data-box"><span class="label">BB</span><span id="bb-count" class="value">0</span></div>
+    <div class="data-box"><span class="label">RB</span><span id="rb-count" class="value">0</span></div>
+    <div class="data-box"><span class="label">ブドウ</span><span id="grape-prob" class="value">-</span></div>
+    <div class="data-box"><span class="label">チェリー</span><span id="cherry-prob" class="value">-</span></div>
+    <div class="data-box"><span class="label">合算</span><span id="total-prob" class="value">-</span></div>
+</div>
+
+<div class="grid">
+    <button class="btn-game" onclick="addCount('game', 1)">G+1</button>
+    <button class="btn-game" onclick="addCount('game', 10)">G+10</button>
+    <button class="btn-bb" onclick="addCount('bb')">BB</button>
+    <button class="btn-rb" onclick="addCount('rb')">RB</button>
+    <button class="btn-grape" onclick="addCount('grape')">ブドウ</button>
+    <button class="btn-cherry" onclick="addCount('cherry')">チェリー</button>
+</div>
+
+<div class="prediction-box">
+    <div class="pred-grid">
+        <div>🍇 設<span id="set-g">-</span></div>
+        <div>🍒 設<span id="set-c">-</span></div>
+        <div>Ｂ 設<span id="set-b">-</span></div>
+        <div>Ｒ 設<span id="set-r">-</span></div>
+    </div>
+    <div class="label">総合推測設定</div>
+    <div id="prediction" class="total-pred">-</div>
+</div>
+
+<button class="reset-btn" onclick="resetAll()">データをリセット</button>
+
+<script>
+    let data = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 };
+
+    const machineData = {
+        "myjug5": {
+            grape: [6.14, 6.06, 5.99, 5.91, 5.84, 5.76],
+            cherry:[35.9, 35.9, 34.6, 33.5, 32.8, 32.2],
+            bb:    [273, 271, 263, 254, 240, 229],
+            rb:    [409, 385, 336, 290, 268, 229]
+        },
+        "gogo3": {
+            grape: [6.15, 6.09, 6.03, 5.96, 5.89, 5.82],
+            cherry:[34.5, 34.1, 33.9, 33.3, 33.1, 32.6],
+            bb:    [269, 269, 266, 259, 247, 234],
+            rb:    [354, 332, 318, 283, 255, 234]
+        },
+        "neo-im": {
+            grape: [6.02, 5.99, 5.96, 5.91, 5.85, 5.78],
+            cherry:[35.5, 35.5, 35.5, 35.5, 35.5, 35.5],
+            bb:    [273, 269, 269, 259, 252, 252],
+            rb:    [439, 399, 331, 315, 255, 255]
+        },
+        "funky2": {
+            grape: [6.12, 6.08, 6.04, 5.98, 5.91, 5.85],
+            cherry:[36.1, 35.6, 35.2, 34.5, 34.0, 33.5],
+            bb:    [266, 259, 256, 249, 231, 219],
+            rb:    [439, 407, 366, 322, 299, 262]
+        },
+        "happy3": {
+            grape: [5.98, 5.93, 5.88, 5.82, 5.76, 5.71],
+            cherry:[36.7, 36.3, 35.8, 35.2, 34.3, 34.0],
+            bb:    [273, 270, 263, 253, 239, 226],
+            rb:    [397, 387, 358, 315, 288, 256]
+        },
+        "miracle": {
+            grape: [6.18, 6.13, 6.08, 6.02, 5.95, 5.88],
+            cherry:[36.5, 36.1, 35.7, 35.2, 34.7, 34.2],
+            bb:    [253, 249, 245, 229, 216, 204],
+            rb:    [412, 397, 374, 321, 297, 261]
+        },
+        "girls": {
+            grape: [6.10, 6.05, 5.99, 5.93, 5.86, 5.79],
+            cherry:[35.1, 34.8, 34.6, 34.1, 33.8, 33.3],
+            bb:    [270, 267, 261, 254, 243, 232],
+            rb:    [381, 358, 321, 283, 263, 232]
+        }
+    };
+
+    function addCount(type, val = 1) {
+        data[type] += val;
+        if (navigator.vibrate) navigator.vibrate(40);
+        updateDisplay();
+    }
+
+    function updateDisplay() {
+        document.getElementById('game-count').innerText = data.game;
+        document.getElementById('bb-count').innerText = data.bb;
+        document.getElementById('rb-count').innerText = data.rb;
+        
+        const gProb = data.game / data.grape;
+        const cProb = data.game / data.cherry;
+        const totalBonus = data.bb + data.rb;
+
+        document.getElementById('grape-prob').innerText = data.grape > 0 ? "1/" + gProb.toFixed(2) : "-";
+        document.getElementById('cherry-prob').innerText = data.cherry > 0 ? "1/" + cProb.toFixed(1) : "-";
+        document.getElementById('total-prob').innerText = totalBonus > 0 ? "1/" + (data.game / totalBonus).toFixed(1) : "-";
+
+        predictAll();
+    }
+
+    function getNearSetting(currentProb, targetArray) {
+        if (!isFinite(currentProb) || currentProb === 0) return null;
+        let bestFit = 1; let minDiff = 999;
+        targetArray.forEach((val, index) => {
+            let diff = Math.abs(val - currentProb);
+            if (diff < minDiff) { minDiff = diff; bestFit = index + 1; }
+        });
+        return bestFit;
+    }
+
+    function predictAll() {
+        const machine = machineData[document.getElementById('machine-select').value];
+        const res = {
+            g: getNearSetting(data.game / data.grape, machine.grape),
+            c: getNearSetting(data.game / data.cherry, machine.cherry),
+            b: getNearSetting(data.game / data.bb, machine.bb),
+            r: getNearSetting(data.game / data.rb, machine.rb)
+        };
+
+        document.getElementById('set-g').innerText = res.g || "-";
+        document.getElementById('set-c').innerText = res.c || "-";
+        document.getElementById('set-b').innerText = res.b || "-";
+        document.getElementById('set-r').innerText = res.r || "-";
+
+        if (res.g || res.r) {
+            // RBを最も重視(40%)、ブドウ(30%)、BB(20%)、チェリー(10%)の配分で計算
+            const score = ((res.r||3)*0.4) + ((res.g||3)*0.3) + ((res.b||3)*0.2) + ((res.c||3)*0.1);
+            const finalSet = Math.round(score);
+            const resDiv = document.getElementById('prediction');
+            resDiv.innerText = "設定 " + finalSet + " 近似";
+            resDiv.style.color = finalSet >= 5 ? "#ff3e3e" : "#ffeb3b";
+        }
+    }
+
+    function resetAll() {
+        if(confirm("リセットしますか？")) {
+            data = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 };
+            updateDisplay();
+            document.getElementById('prediction').innerText = "-";
+        }
+    }
+</script>
+</body>
+</html>
