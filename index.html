@@ -4,40 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>J-Counter Pro Gachi v9</title>
+    <title>J-Counter Pro Tab</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding-bottom: 40px; }
-        .header { background: #333; padding: 10px; border-bottom: 2px solid #ed1c24; position: sticky; top: 0; z-index: 100; }
-        select { width: 95%; padding: 10px; font-size: 1rem; border-radius: 5px; background: #444; color: white; border: 1px solid #666; }
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding-bottom: 70px; overflow-x: hidden; }
         
+        /* タブ切り替え */
+        .tab-content { display: none; }
+        .active-tab { display: block; }
+        
+        /* 下部ナビゲーション */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; height: 60px; background: #333; display: flex; border-top: 2px solid #ed1c24; z-index: 1000; }
+        .nav-item { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: bold; border-right: 1px solid #444; }
+        .nav-item.active { background: #ed1c24; color: white; }
+
+        /* ヘッダー */
+        .header { background: #333; padding: 10px; border-bottom: 2px solid #ed1c24; }
+        select { width: 90%; padding: 10px; font-size: 1rem; border-radius: 5px; background: #444; color: white; border: 1px solid #666; }
+
+        /* 1ページ目：カウンター */
         .display { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px; background: #252525; }
         .data-box { background: #333; padding: 5px; border-radius: 4px; border: 1px solid #444; }
         .label { font-size: 0.6rem; color: #aaa; display: block; }
-        .value { font-size: 0.9rem; font-weight: bold; }
+        .value { font-size: 1rem; font-weight: bold; }
 
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px; }
         button { border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; touch-action: manipulation; position: relative; }
-        
-        .btn-set-label { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: #ffeb3b; background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 3px; }
-        
-        .btn-large { height: 120px; font-size: 1.4rem; grid-column: span 2; }
+        .btn-large { height: 120px; font-size: 1.5rem; grid-column: span 2; }
         .btn-grape { background: #5d2d91; }
         .btn-cherry { background: #c2185b; }
+        .btn-bb { background: #d32f2f; height: 70px; grid-column: span 2; }
+        .btn-rb { background: #1976d2; height: 70px; grid-column: span 2; }
         .btn-game { background: #555; height: 60px; font-size: 1rem; }
-        .btn-small { height: 60px; font-size: 0.9rem; background: #333; border: 1px solid #555; }
-        .btn-bb { background: #d32f2f; }
-        .btn-rb { background: #1976d2; }
+        .btn-set-label { position: absolute; top: 5px; left: 8px; font-size: 0.8rem; color: #ffeb3b; background: rgba(0,0,0,0.5); padding: 2px 5px; border-radius: 3px; }
 
-        .prediction-box { margin: 10px; padding: 15px; background: #000; border: 2px solid #ed1c24; border-radius: 10px; }
-        .total-pred { font-size: 2.2rem; color: #ffeb3b; font-weight: bold; }
+        /* 2ページ目：詳細・設定 */
+        .page2-container { padding: 20px; text-align: left; }
+        .prediction-box { margin-bottom: 20px; padding: 20px; background: #000; border: 2px solid #ed1c24; border-radius: 10px; text-align: center; }
+        .total-pred { font-size: 2.5rem; color: #ffeb3b; font-weight: bold; }
+        .input-group { background: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; }
+        .inherit-input { width: 100px; padding: 8px; margin: 5px; background: #222; color: white; border: 1px solid #666; }
+        .spec-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; color: white; }
+        .spec-table th, .spec-table td { border: 1px solid #555; padding: 8px; text-align: center; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; overflow-y: auto; }
-        .modal-content { padding: 15px; text-align: left; }
-        .spec-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.7rem; color: white; }
-        .spec-table th, .spec-table td { border: 1px solid #555; padding: 5px; text-align: center; }
-        .inherit-input { width: 80px; padding: 8px; background: #222; color: white; border: 1px solid #666; margin: 5px; }
-        
-        .btn-reset { background: none; border: 1px solid #444; color: #666; font-size: 0.7rem; padding: 10px; width: 60%; margin-top: 20px; border-radius: 5px; }
+        /* 横画面最適化 */
+        @media screen and (orientation: landscape) {
+            .btn-large { height: 90px; }
+            .btn-bb, .btn-rb { height: 60px; }
+            .display { grid-template-columns: repeat(6, 1fr); }
+            .data-box[style*="span 3"] { grid-column: span 6 !important; }
+        }
     </style>
 </head>
 <body>
@@ -55,62 +70,61 @@
     </select>
 </div>
 
-<div class="display">
-    <div class="data-box"><span class="label">自分G数</span><span id="game-count" class="value">0</span></div>
-    <div class="data-box"><span class="label">BB / RB(自分)</span><span id="bonus-counts" class="value">0 / 0</span></div>
-    <div class="data-box"><span class="label">自分合算</span><span id="my-total-prob" class="value">-</span></div>
-    
-    <div class="data-box"><span class="label">ぶどう(自分)</span><span id="grape-prob" class="value">-</span></div>
-    <div class="data-box"><span class="label">前任ぶどう逆算</span><span id="pre-grape-est" class="value">-</span></div>
-    <div class="data-box"><span class="label">差枚(推定)</span><span id="diff-count" class="value">0</span></div>
-
-    <div class="data-box" style="grid-column: span 3;"><span class="label">総合合算（自分＋継承）</span><span id="total-prob" class="value">-</span></div>
-</div>
-
-<div class="grid">
-    <button class="btn-large btn-grape" onclick="addCount('grape')">
-        <span id="grape-set-label" class="btn-set-label">設?</span>
-        ぶどう<br><span id="grape-display">0</span>
-    </button>
-    <button class="btn-large btn-cherry" onclick="addCount('cherry')">
-        <span id="cherry-set-label" class="btn-set-label">設?</span>
-        チェリー<br><span id="cherry-display">0</span>
-    </button>
-    
-    <button class="btn-game" onclick="addCount('game', 1)">G+1</button>
-    <button class="btn-game" onclick="addCount('game', 10)">G+10</button>
-    <button class="btn-game" onclick="addCount('game', 100)" style="grid-column: span 2;">G + 100</button>
-    
-    <button class="btn-small btn-bb" onclick="addCount('bb')">BIG</button>
-    <button class="btn-small btn-rb" onclick="addCount('rb')">REG</button>
-    <button class="btn-small" onclick="toggleModal('inherit-modal')">継承設定</button>
-    <button class="btn-small" onclick="showSpec()">スペック表</button>
-</div>
-
-<div class="prediction-box">
-    <div class="label">全データ統合 推測設定</div>
-    <div id="prediction" class="total-pred">-</div>
-</div>
-
-<button class="btn-reset" onclick="resetAll()">全データを消去（リセット）</button>
-
-<div id="inherit-modal" class="modal">
-    <div class="modal-content">
-        <h3>打ち始め時のデータ</h3>
-        総G数: <input type="number" id="pre-game" class="inherit-input" value="0"><br>
-        総BB : <input type="number" id="pre-bb" class="inherit-input" value="0"><br>
-        総RB : <input type="number" id="pre-rb" class="inherit-input" value="0"><br>
-        <button onclick="saveInherit()" style="background:#ed1c24; color:white; padding:10px; border-radius:5px;">保存して開始</button>
-        <button onclick="toggleModal('inherit-modal')" style="background:#444; color:white; padding:10px; border-radius:5px;">閉じる</button>
+<!-- 1ページ目：カウンター -->
+<div id="page1" class="tab-content active-tab">
+    <div class="display">
+        <div class="data-box"><span class="label">自分G数</span><span id="game-count" class="value">0</span></div>
+        <div class="data-box"><span class="label">BB/RB(自分)</span><span id="bonus-counts" class="value">0 / 0</span></div>
+        <div class="data-box"><span class="label">自分合算</span><span id="my-total-prob" class="value">-</span></div>
+        <div class="data-box"><span class="label">ぶどう(自分)</span><span id="grape-prob" class="value">-</span></div>
+        <div class="data-box"><span class="label">前任ぶどう逆算</span><span id="pre-grape-est" class="value">-</span></div>
+        <div class="data-box"><span class="label">差枚(推定)</span><span id="diff-count" class="value">0</span></div>
+        <div class="data-box" style="grid-column: span 3;"><span class="label">総合合算（自分＋継承）</span><span id="total-prob" class="value">-</span></div>
+    </div>
+    <div class="grid">
+        <button class="btn-large btn-grape" onclick="addCount('grape')">
+            <span id="grape-set-label" class="btn-set-label">設?</span>
+            ぶどう<br><span id="grape-display">0</span>
+        </button>
+        <button class="btn-large btn-cherry" onclick="addCount('cherry')">
+            <span id="cherry-set-label" class="btn-set-label">設?</span>
+            チェリー<br><span id="cherry-display">0</span>
+        </button>
+        <button class="btn-bb" onclick="addCount('bb')">BIG</button>
+        <button class="btn-rb" onclick="addCount('rb')">REG</button>
+        <button class="btn-game" onclick="addCount('game', 1)">G+1</button>
+        <button class="btn-game" onclick="addCount('game', 10)">G+10</button>
+        <button class="btn-game" onclick="addCount('game', 100)" style="grid-column: span 2;">G + 100</button>
     </div>
 </div>
 
-<div id="spec-modal" class="modal">
-    <div class="modal-content">
-        <h3 id="spec-title"></h3>
+<!-- 2ページ目：詳細・設定 -->
+<div id="page2" class="tab-content">
+    <div class="page2-container">
+        <div class="prediction-box">
+            <div class="label">全データ統合 推測設定</div>
+            <div id="prediction" class="total-pred">-</div>
+        </div>
+
+        <div class="input-group">
+            <h3>継承データ入力</h3>
+            総G数: <input type="number" id="pre-game" class="inherit-input" value="0"><br>
+            総BB : <input type="number" id="pre-bb" class="inherit-input" value="0"><br>
+            総RB : <input type="number" id="pre-rb" class="inherit-input" value="0"><br>
+            <button onclick="saveInherit()" style="background:#ed1c24; color:white; padding:10px; width:100%; border-radius:5px; margin-top:10px;">データを反映</button>
+        </div>
+
+        <h3>機種スペック表</h3>
         <div id="spec-body" style="overflow-x:auto;"></div>
-        <button onclick="toggleModal('spec-modal')" style="background:#444; color:white; padding:10px; width:100%; border-radius:5px; margin-top:10px;">閉じる</button>
+
+        <button onclick="resetAll()" style="background:none; border:1px solid #555; color:#777; width:100%; padding:15px; margin-top:30px;">全データをリセット</button>
     </div>
+</div>
+
+<!-- ナビゲーションバー -->
+<div class="nav-bar">
+    <div id="nav1" class="nav-item active" onclick="switchTab(1)">メインカウンター</div>
+    <div id="nav2" class="nav-item" onclick="switchTab(2)">設定推測・継承</div>
 </div>
 
 <script>
@@ -127,6 +141,14 @@
         "girls":  { name: "ジャグラーガールズ", grape: [6.10, 6.05, 5.99, 5.93, 5.86, 5.79], cherry: [35.1, 34.8, 34.6, 34.1, 33.8, 33.3], rb: [381, 362.1, 334.4, 300.6, 275.4, 252.1], bb: [273.1, 270.8, 263.2, 254, 243.6, 232.4], total: [159.1, 154.6, 147.3, 137.7, 128.8, 120.7] },
         "happy3": { name: "ハッピージャグラー", grape: [5.98, 5.93, 5.88, 5.82, 5.76, 5.71], cherry: [36.7, 36.3, 35.8, 35.2, 34.3, 34.0], rb: [397.2, 364.1, 341.3, 315.1, 287.4, 256], bb: [273.1, 270.8, 263.2, 254, 239.2, 226], total: [161.8, 155, 148.6, 140.9, 130.5, 120.2] }
     };
+
+    function switchTab(pageNum) {
+        document.querySelectorAll('.tab-content').forEach(p => p.classList.remove('active-tab'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('page' + pageNum).classList.add('active-tab');
+        document.getElementById('nav' + pageNum).classList.add('active');
+        if(pageNum === 2) showSpec();
+    }
 
     function addCount(type, val = 1) {
         myData[type] += val;
@@ -166,46 +188,33 @@
             r: getNearSetting(g / rb, m.rb),
             b: getNearSetting(g / bb, m.bb)
         };
-
         document.getElementById('grape-set-label').innerText = res.g ? "設" + res.g : "設?";
         document.getElementById('cherry-set-label').innerText = res.c ? "設" + res.c : "設?";
-
         if (!res.g && !res.r) return;
         const score = ((res.r||3)*0.5) + ((res.g||3)*0.3) + ((res.b||3)*0.1) + ((res.c||3)*0.1);
         const finalSet = Math.round(score);
-        const resDiv = document.getElementById('prediction');
-        resDiv.innerText = "設定 " + finalSet + " 近似";
-        resDiv.style.color = finalSet >= 5 ? "#ff3e3e" : "#ffeb3b";
+        document.getElementById('prediction').innerText = "設定 " + finalSet + " 近似";
+        document.getElementById('prediction').style.color = finalSet >= 5 ? "#ff3e3e" : "#ffeb3b";
     }
 
-    function resetAll() {
-        if(confirm("全てのデータをリセットしますか？（打ち始めデータも消去されます）")) {
-            myData = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 };
-            preData = { game: 0, bb: 0, rb: 0 };
-            document.getElementById('pre-game').value = 0;
-            document.getElementById('pre-bb').value = 0;
-            document.getElementById('pre-rb').value = 0;
-            updateDisplay();
+    function showSpec() {
+        const id = document.getElementById('machine-select').value;
+        const m = machineData[id];
+        let html = `<table class="spec-table"><tr><th>設定</th><th>合算</th><th>ぶどう</th><th>チェ</th></tr>`;
+        for(let i=0; i<6; i++) {
+            html += `<tr><td>${i+1}</td><td>1/${m.total[i]}</td><td>1/${m.grape[i].toFixed(2)}</td><td>1/${m.cherry[i].toFixed(1)}</td></tr>`;
         }
+        html += `</table>`;
+        document.getElementById('spec-body').innerHTML = html;
     }
 
     function getNearSetting(prob, target) { if (!isFinite(prob) || prob <= 0) return null; let best = 1; let min = 999; target.forEach((v, i) => { let d = Math.abs(v - prob); if(d < min){ min=d; best=i+1; }}); return best; }
     function estimatePreGrape() { if (preData.game < 100 || preData.rb === 0) { document.getElementById('pre-grape-est').innerText = "-"; return; } const m = machineData[document.getElementById('machine-select').value]; const rbProb = preData.game / preData.rb; let estSet = getNearSetting(rbProb, m.rb); document.getElementById('pre-grape-est').innerText = "1/" + m.grape[estSet-1].toFixed(2); }
-    function toggleModal(id) { const m = document.getElementById(id); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; }
-    function saveInherit() { preData.game = parseInt(document.getElementById('pre-game').value) || 0; preData.bb = parseInt(document.getElementById('pre-bb').value) || 0; preData.rb = parseInt(document.getElementById('pre-rb').value) || 0; toggleModal('inherit-modal'); updateDisplay(); }
+    function saveInherit() { preData.game = parseInt(document.getElementById('pre-game').value) || 0; preData.bb = parseInt(document.getElementById('pre-bb').value) || 0; preData.rb = parseInt(document.getElementById('pre-rb').value) || 0; alert("反映しました"); updateDisplay(); }
+    function resetAll() { if(confirm("全データを消去しますか？")) { myData = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 }; preData = { game: 0, bb: 0, rb: 0 }; updateDisplay(); } }
     
-    function showSpec() {
-        const id = document.getElementById('machine-select').value;
-        const m = machineData[id];
-        document.getElementById('spec-title').innerText = m.name;
-        let html = `<table class="spec-table"><tr><th>設定</th><th>BB</th><th>RB</th><th>合算</th><th>ぶどう</th><th>チェ</th></tr>`;
-        for(let i=0; i<6; i++) {
-            html += `<tr><td>${i+1}</td><td>1/${m.bb[i]}</td><td>1/${m.rb[i]}</td><td>1/${m.total[i]}</td><td>1/${m.grape[i].toFixed(2)}</td><td>1/${m.cherry[i].toFixed(1)}</td></tr>`;
-        }
-        html += `</table>`;
-        document.getElementById('spec-body').innerHTML = html;
-        toggleModal('spec-modal');
-    }
+    // 初期化
+    updateDisplay();
 </script>
 </body>
 </html>
