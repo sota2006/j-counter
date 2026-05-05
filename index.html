@@ -4,75 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <title>J-Counter Pro Max</title>
+    <title>J-Counter Pro Gachi v9</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding: 0; overflow-x: hidden; }
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; margin: 0; padding-bottom: 40px; }
+        .header { background: #333; padding: 10px; border-bottom: 2px solid #ed1c24; position: sticky; top: 0; z-index: 100; }
+        select { width: 95%; padding: 10px; font-size: 1rem; border-radius: 5px; background: #444; color: white; border: 1px solid #666; }
         
-        /* ヘッダー固定 */
-        .header { background: #333; padding: 8px; border-bottom: 2px solid #ed1c24; }
-        select { width: 95%; padding: 8px; font-size: 1rem; border-radius: 5px; background: #444; color: white; border: 1px solid #666; }
-        
-        /* 上部データ表示エリア（横画面時は1行に並べる） */
-        .display { display: grid; grid-template-columns: repeat(6, 1fr); gap: 2px; padding: 5px; background: #252525; }
-        .data-box { background: #333; padding: 4px; border-radius: 4px; border: 1px solid #444; }
+        .display { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 8px; background: #252525; }
+        .data-box { background: #333; padding: 5px; border-radius: 4px; border: 1px solid #444; }
         .label { font-size: 0.6rem; color: #aaa; display: block; }
         .value { font-size: 0.9rem; font-weight: bold; }
 
-        /* ボタンエリア（横画面対応） */
-        .grid { 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* 横に4つ並べる */
-            gap: 6px; 
-            padding: 8px; 
-            max-width: 900px; 
-            margin: 0 auto;
-        }
-        button { 
-            padding: 12px 5px; 
-            font-size: 0.9rem; 
-            border: none; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            color: white; 
-            font-weight: bold; 
-            touch-action: manipulation; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-        }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; }
+        button { border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; touch-action: manipulation; position: relative; }
         
-        /* ボタンの色と役割 */
-        .btn-game { background: #555; }
-        .btn-bb { background: #d32f2f; }
-        .btn-rb { background: #1976d2; }
+        .btn-set-label { position: absolute; top: 5px; left: 8px; font-size: 0.75rem; color: #ffeb3b; background: rgba(0,0,0,0.4); padding: 2px 5px; border-radius: 3px; }
+        
+        .btn-large { height: 120px; font-size: 1.4rem; grid-column: span 2; }
         .btn-grape { background: #5d2d91; }
         .btn-cherry { background: #c2185b; }
-        .btn-sub { font-size: 0.7rem; opacity: 0.9; }
+        .btn-game { background: #555; height: 60px; font-size: 1rem; }
+        .btn-small { height: 60px; font-size: 0.9rem; background: #333; border: 1px solid #555; }
+        .btn-bb { background: #d32f2f; }
+        .btn-rb { background: #1976d2; }
 
-        /* 推測結果エリア */
-        .prediction-box { 
-            margin: 5px 10px; 
-            padding: 10px; 
-            background: #000; 
-            border: 2px solid #ed1c24; 
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-        }
-        .pred-details { font-size: 0.7rem; color: #ccc; text-align: left; line-height: 1.4; }
-        .total-pred { font-size: 1.8rem; color: #ffeb3b; font-weight: bold; }
+        .prediction-box { margin: 10px; padding: 15px; background: #000; border: 2px solid #ed1c24; border-radius: 10px; }
+        .total-pred { font-size: 2.2rem; color: #ffeb3b; font-weight: bold; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; overflow-y: auto; }
+        .modal-content { padding: 15px; text-align: left; }
+        .spec-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.7rem; color: white; }
+        .spec-table th, .spec-table td { border: 1px solid #555; padding: 5px; text-align: center; }
+        .inherit-input { width: 80px; padding: 8px; background: #222; color: white; border: 1px solid #666; margin: 5px; }
         
-        .reset-btn { margin: 5px; background: none; border: 1px solid #444; color: #666; padding: 5px; font-size: 0.6rem; }
-
-        /* 横画面用の微調整 */
-        @media screen and (orientation: landscape) {
-            .grid { grid-template-columns: repeat(4, 1fr); gap: 4px; }
-            button { padding: 8px 2px; }
-            .total-pred { font-size: 1.5rem; }
-        }
+        .btn-reset { background: none; border: 1px solid #444; color: #666; font-size: 0.7rem; padding: 10px; width: 60%; margin-top: 20px; border-radius: 5px; }
     </style>
 </head>
 <body>
@@ -81,159 +46,165 @@
     <select id="machine-select" onchange="updateDisplay()">
         <option value="myjug5">マイジャグラーⅤ</option>
         <option value="gogo3">ゴーゴージャグラー３</option>
-        <option value="neo-im">ネオアイムジャグラー</option>
+        <option value="neo-im">ネオアイムジャグラーEX</option>
         <option value="funky2">ファンキージャグラー２</option>
-        <option value="happy3">ハッピージャグラーVⅢ</option>
-        <option value="miracle">ミラクジャグラー(新)</option>
-        <option value="girls">ジャグラーガールズSS</option>
+        <option value="mrjug">ミスタージャグラー</option>
+        <option value="miracle">ウルトラミラクルジャグラー</option>
+        <option value="girls">ジャグラーガールズ</option>
+        <option value="happy3">ハッピージャグラー</option>
     </select>
 </div>
 
 <div class="display">
-    <div class="data-box"><span class="label">G数</span><span id="game-count" class="value">0</span></div>
-    <div class="data-box"><span class="label">BB</span><span id="bb-count" class="value">0</span></div>
-    <div class="data-box"><span class="label">RB</span><span id="rb-count" class="value">0</span></div>
-    <div class="data-box"><span class="label">ぶどう</span><span id="grape-prob" class="value">-</span></div>
-    <div class="data-box"><span class="label">チェ</span><span id="cherry-prob" class="value">-</span></div>
-    <div class="data-box"><span class="label">合算</span><span id="total-prob" class="value">-</span></div>
+    <div class="data-box"><span class="label">自分G数</span><span id="game-count" class="value">0</span></div>
+    <div class="data-box"><span class="label">BB / RB(自分)</span><span id="bonus-counts" class="value">0 / 0</span></div>
+    <div class="data-box"><span class="label">自分合算</span><span id="my-total-prob" class="value">-</span></div>
+    
+    <div class="data-box"><span class="label">ぶどう(自分)</span><span id="grape-prob" class="value">-</span></div>
+    <div class="data-box"><span class="label">前任ぶどう逆算</span><span id="pre-grape-est" class="value">-</span></div>
+    <div class="data-box"><span class="label">差枚(推定)</span><span id="diff-count" class="value">0</span></div>
+
+    <div class="data-box" style="grid-column: span 3;"><span class="label">総合合算（自分＋継承）</span><span id="total-prob" class="value">-</span></div>
 </div>
 
 <div class="grid">
-    <!-- 回転数操作 -->
-    <button class="btn-game btn-sub" onclick="addCount('game', 1)">G+1</button>
-    <button class="btn-game btn-sub" onclick="addCount('game', 10)">G+10</button>
-    <button class="btn-game" onclick="addCount('game', 100)" style="grid-column: span 2; background:#777;">G + 100</button>
+    <button class="btn-large btn-grape" onclick="addCount('grape')">
+        <span id="grape-set-label" class="btn-set-label">設?</span>
+        ぶどう<br><span id="grape-display">0</span>
+    </button>
+    <button class="btn-large btn-cherry" onclick="addCount('cherry')">
+        <span id="cherry-set-label" class="btn-set-label">設?</span>
+        チェリー<br><span id="cherry-display">0</span>
+    </button>
     
-    <!-- カウントボタン -->
-    <button class="btn-bb" onclick="addCount('bb')">BIG<br><span id="bb-display">0</span></button>
-    <button class="btn-rb" onclick="addCount('rb')">REG<br><span id="rb-display">0</span></button>
-    <button class="btn-grape" onclick="addCount('grape')">ぶどう<br><span id="grape-display">0</span></button>
-    <button class="btn-cherry" onclick="addCount('cherry')">チェリー<br><span id="cherry-display">0</span></button>
+    <button class="btn-game" onclick="addCount('game', 1)">G+1</button>
+    <button class="btn-game" onclick="addCount('game', 10)">G+10</button>
+    <button class="btn-game" onclick="addCount('game', 100)" style="grid-column: span 2;">G + 100</button>
+    
+    <button class="btn-small btn-bb" onclick="addCount('bb')">BIG</button>
+    <button class="btn-small btn-rb" onclick="addCount('rb')">REG</button>
+    <button class="btn-small" onclick="toggleModal('inherit-modal')">継承設定</button>
+    <button class="btn-small" onclick="showSpec()">スペック表</button>
 </div>
 
 <div class="prediction-box">
-    <div class="pred-details">
-        🍇設:<span id="set-g">-</span> 🍒設:<span id="set-c">-</span><br>
-        Ｂ設:<span id="set-b">-</span> Ｒ設:<span id="set-r">-</span>
-    </div>
+    <div class="label">全データ統合 推測設定</div>
     <div id="prediction" class="total-pred">-</div>
 </div>
 
-<button class="reset-btn" onclick="resetAll()">データをリセット</button>
+<button class="btn-reset" onclick="resetAll()">全データを消去（リセット）</button>
+
+<div id="inherit-modal" class="modal">
+    <div class="modal-content">
+        <h3>打ち始め時のデータ</h3>
+        総G数: <input type="number" id="pre-game" class="inherit-input" value="0"><br>
+        総BB : <input type="number" id="pre-bb" class="inherit-input" value="0"><br>
+        総RB : <input type="number" id="pre-rb" class="inherit-input" value="0"><br>
+        <button onclick="saveInherit()" style="background:#ed1c24; color:white; padding:10px; border-radius:5px;">保存して開始</button>
+        <button onclick="toggleModal('inherit-modal')" style="background:#444; color:white; padding:10px; border-radius:5px;">閉じる</button>
+    </div>
+</div>
+
+<div id="spec-modal" class="modal">
+    <div class="modal-content">
+        <h3 id="spec-title"></h3>
+        <div id="spec-body" style="overflow-x:auto;"></div>
+        <button onclick="toggleModal('spec-modal')" style="background:#444; color:white; padding:10px; width:100%; border-radius:5px; margin-top:10px;">閉じる</button>
+    </div>
+</div>
 
 <script>
-    let data = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 };
+    let myData = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 };
+    let preData = { game: 0, bb: 0, rb: 0 };
 
     const machineData = {
-        "myjug5": {
-            grape: [6.14, 6.06, 5.99, 5.91, 5.84, 5.76],
-            cherry:[35.9, 35.9, 34.6, 33.5, 32.8, 32.2],
-            bb: [273, 271, 263, 254, 240, 229],
-            rb: [409, 385, 331, 290, 268, 229]
-        },
-        "gogo3": {
-            grape: [6.15, 6.09, 6.03, 5.96, 5.89, 5.82],
-            cherry:[34.5, 34.1, 33.9, 33.3, 33.1, 32.6],
-            bb: [269, 269, 264, 255, 247, 234],
-            rb: [354, 332, 306, 268, 255, 234]
-        },
-        "neo-im": {
-            grape: [6.02, 5.99, 5.96, 5.91, 5.85, 5.78],
-            cherry:[35.5, 35.5, 35.5, 35.5, 35.5, 35.5],
-            bb: [273, 269, 269, 259, 259, 255],
-            rb: [439, 399, 346, 312, 259, 255]
-        },
-        "funky2": {
-            grape: [6.12, 6.08, 6.04, 5.98, 5.91, 5.85],
-            cherry:[36.1, 35.6, 35.2, 34.5, 34.0, 33.5],
-            bb: [266, 259, 256, 249, 240, 219],
-            rb: [439, 407, 366, 322, 299, 262]
-        },
-        "happy3": {
-            grape: [5.98, 5.93, 5.88, 5.82, 5.76, 5.71],
-            cherry:[36.7, 36.3, 35.8, 35.2, 34.3, 34.0],
-            bb: [273, 270, 263, 253, 239, 226],
-            rb: [397, 387, 350, 313, 280, 255]
-        },
-        "miracle": {
-            grape: [6.18, 6.13, 6.08, 6.02, 5.95, 5.88],
-            cherry:[36.5, 36.1, 35.7, 35.2, 34.7, 34.2],
-            bb: [273, 264, 254, 243, 224, 204],
-            rb: [439, 392, 372, 327, 303, 273]
-        },
-        "girls": {
-            grape: [6.10, 6.05, 5.99, 5.93, 5.86, 5.79],
-            cherry:[35.1, 34.8, 34.6, 34.1, 33.8, 33.3],
-            bb: [270, 268, 259, 249, 238, 225],
-            rb: [381, 366, 327, 292, 268, 248]
-        }
+        "myjug5": { name: "マイジャグラーⅤ", grape: [6.14, 6.06, 5.99, 5.91, 5.84, 5.76], cherry: [35.9, 35.9, 34.6, 33.5, 32.8, 32.2], rb: [409.6, 385.5, 331, 290, 268.6, 229.1], bb: [273.1, 270.8, 263.2, 254, 240.1, 229.1], total: [163.8, 159.1, 146.6, 135.4, 126.8, 114.6] },
+        "gogo3":  { name: "ゴーゴージャグラー３", grape: [6.15, 6.09, 6.03, 5.96, 5.89, 5.82], cherry: [34.5, 34.1, 33.9, 33.3, 33.1, 32.6], rb: [354.2, 334.4, 306.2, 278.9, 255, 234.9], bb: [259, 258, 257, 255, 247.3, 233.2], total: [149.6, 146, 139.7, 133.2, 125.6, 117] },
+        "neo-im": { name: "ネオアイムジャグラーEX", grape: [6.02, 5.99, 5.96, 5.91, 5.85, 5.78], cherry: [35.5, 35.5, 35.5, 35.5, 35.5, 35.5], rb: [442.8, 399.6, 331, 315.1, 255, 255], bb: [273.1, 269.7, 269.7, 259, 259, 255], total: [168.9, 161, 148.6, 142.2, 128.5, 127.5] },
+        "funky2": { name: "ファンキージャグラー２", grape: [6.12, 6.08, 6.04, 5.98, 5.91, 5.85], cherry: [36.1, 35.6, 35.2, 34.5, 34.0, 33.5], rb: [439.8, 399.6, 366.1, 322.8, 299.3, 262.1], bb: [266.4, 259, 256, 249.2, 240.1, 219.7], total: [165.9, 157.1, 150.7, 140.6, 133.2, 119.6] },
+        "mrjug":  { name: "ミスタージャグラー", grape: [6.10, 6.00, 5.90, 5.80, 5.70, 5.60], cherry: [35.6, 35.1, 34.7, 34.2, 33.7, 33.3], rb: [374.5, 354.2, 331, 304.8, 276.5, 239.2], bb: [268.6, 265.3, 261.1, 255, 246.3, 237.5], total: [156.4, 151.7, 145.6, 138.8, 130.2, 119.2] },
+        "miracle":{ name: "ウルトラミラクルジャグラー", grape: [6.18, 6.13, 6.08, 6.02, 5.95, 5.88], cherry: [36.5, 36.1, 35.7, 35.2, 34.7, 34.2], rb: [431.2, 404.5, 352.3, 312.1, 284.9, 244.5], bb: [273.1, 268.6, 261.1, 249.2, 238.3, 219.2], total: [167.2, 161.4, 149.6, 138.8, 129.8, 115.4] },
+        "girls":  { name: "ジャグラーガールズ", grape: [6.10, 6.05, 5.99, 5.93, 5.86, 5.79], cherry: [35.1, 34.8, 34.6, 34.1, 33.8, 33.3], rb: [381, 362.1, 334.4, 300.6, 275.4, 252.1], bb: [273.1, 270.8, 263.2, 254, 243.6, 232.4], total: [159.1, 154.6, 147.3, 137.7, 128.8, 120.7] },
+        "happy3": { name: "ハッピージャグラー", grape: [5.98, 5.93, 5.88, 5.82, 5.76, 5.71], cherry: [36.7, 36.3, 35.8, 35.2, 34.3, 34.0], rb: [397.2, 364.1, 341.3, 315.1, 287.4, 256], bb: [273.1, 270.8, 263.2, 254, 239.2, 226], total: [161.8, 155, 148.6, 140.9, 130.5, 120.2] }
     };
 
     function addCount(type, val = 1) {
-        data[type] += val;
+        myData[type] += val;
         if (navigator.vibrate) navigator.vibrate(40);
         updateDisplay();
     }
 
     function updateDisplay() {
-        document.getElementById('game-count').innerText = data.game;
-        document.getElementById('bb-count').innerText = data.bb;
-        document.getElementById('rb-count').innerText = data.rb;
-        document.getElementById('bb-display').innerText = data.bb;
-        document.getElementById('rb-display').innerText = data.rb;
-        document.getElementById('grape-display').innerText = data.grape;
-        document.getElementById('cherry-display').innerText = data.cherry;
+        document.getElementById('game-count').innerText = myData.game;
+        document.getElementById('bonus-counts').innerText = myData.bb + " / " + myData.rb;
+        document.getElementById('grape-display').innerText = myData.grape;
+        document.getElementById('cherry-display').innerText = myData.cherry;
+
+        const totalG = myData.game + preData.game;
+        const totalBB = myData.bb + preData.bb;
+        const totalRB = myData.rb + preData.rb;
         
-        const gProb = data.game / data.grape;
-        const cProb = data.game / data.cherry;
-        const totalBonus = data.bb + data.rb;
+        const myTotalBonus = myData.bb + myData.rb;
+        document.getElementById('my-total-prob').innerText = myTotalBonus > 0 ? "1/" + (myData.game / myTotalBonus).toFixed(1) : "-";
+        const gProb = myData.game / myData.grape;
+        const cProb = myData.game / myData.cherry;
+        document.getElementById('grape-prob').innerText = myData.grape > 0 ? "1/" + gProb.toFixed(2) : "-";
+        const totalBonus = totalBB + totalRB;
+        document.getElementById('total-prob').innerText = totalBonus > 0 ? "1/" + (totalG / totalBonus).toFixed(1) : "-";
+        const diff = (myData.bb * 240 + myData.rb * 96 + myData.grape * 8 + myData.cherry * 2) - (myData.game * 3);
+        document.getElementById('diff-count').innerText = (diff > 0 ? "+" : "") + diff;
 
-        document.getElementById('grape-prob').innerText = data.grape > 0 ? "1/" + gProb.toFixed(2) : "-";
-        document.getElementById('cherry-prob').innerText = data.cherry > 0 ? "1/" + cProb.toFixed(1) : "-";
-        document.getElementById('total-prob').innerText = totalBonus > 0 ? "1/" + (data.game / totalBonus).toFixed(1) : "-";
-
-        predictAll();
+        estimatePreGrape();
+        predictAll(totalG, totalBB, totalRB, gProb, cProb);
     }
 
-    function getNearSetting(currentProb, targetArray) {
-        if (!isFinite(currentProb) || currentProb <= 0) return null;
-        let bestFit = 1; let minDiff = 999;
-        targetArray.forEach((val, index) => {
-            let diff = Math.abs(val - currentProb);
-            if (diff < minDiff) { minDiff = diff; bestFit = index + 1; }
-        });
-        return bestFit;
-    }
-
-    function predictAll() {
-        const machine = machineData[document.getElementById('machine-select').value];
+    function predictAll(g, bb, rb, gP, cP) {
+        const m = machineData[document.getElementById('machine-select').value];
         const res = {
-            g: getNearSetting(data.game / data.grape, machine.grape),
-            c: getNearSetting(data.game / data.cherry, machine.cherry),
-            b: getNearSetting(data.game / data.bb, machine.bb),
-            r: getNearSetting(data.game / data.rb, machine.rb)
+            g: getNearSetting(gP, m.grape),
+            c: getNearSetting(cP, m.cherry),
+            r: getNearSetting(g / rb, m.rb),
+            b: getNearSetting(g / bb, m.bb)
         };
 
-        document.getElementById('set-g').innerText = res.g || "-";
-        document.getElementById('set-c').innerText = res.c || "-";
-        document.getElementById('set-b').innerText = res.b || "-";
-        document.getElementById('set-r').innerText = res.r || "-";
+        document.getElementById('grape-set-label').innerText = res.g ? "設" + res.g : "設?";
+        document.getElementById('cherry-set-label').innerText = res.c ? "設" + res.c : "設?";
 
-        if (res.g || res.r) {
-            const score = ((res.r||3)*0.4) + ((res.g||3)*0.3) + ((res.b||3)*0.2) + ((res.c||3)*0.1);
-            const finalSet = Math.round(score);
-            const resDiv = document.getElementById('prediction');
-            resDiv.innerText = "設定 " + finalSet + " 近似";
-            resDiv.style.color = finalSet >= 5 ? "#ff3e3e" : "#ffeb3b";
-        }
+        if (!res.g && !res.r) return;
+        const score = ((res.r||3)*0.5) + ((res.g||3)*0.3) + ((res.b||3)*0.1) + ((res.c||3)*0.1);
+        const finalSet = Math.round(score);
+        const resDiv = document.getElementById('prediction');
+        resDiv.innerText = "設定 " + finalSet + " 近似";
+        resDiv.style.color = finalSet >= 5 ? "#ff3e3e" : "#ffeb3b";
     }
 
     function resetAll() {
-        if(confirm("データをクリアしますか？")) {
-            data = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 };
+        if(confirm("全てのデータをリセットしますか？（打ち始めデータも消去されます）")) {
+            myData = { game: 0, grape: 0, cherry: 0, bb: 0, rb: 0 };
+            preData = { game: 0, bb: 0, rb: 0 };
+            document.getElementById('pre-game').value = 0;
+            document.getElementById('pre-bb').value = 0;
+            document.getElementById('pre-rb').value = 0;
             updateDisplay();
-            document.getElementById('prediction').innerText = "-";
         }
+    }
+
+    function getNearSetting(prob, target) { if (!isFinite(prob) || prob <= 0) return null; let best = 1; let min = 999; target.forEach((v, i) => { let d = Math.abs(v - prob); if(d < min){ min=d; best=i+1; }}); return best; }
+    function estimatePreGrape() { if (preData.game < 100 || preData.rb === 0) { document.getElementById('pre-grape-est').innerText = "-"; return; } const m = machineData[document.getElementById('machine-select').value]; const rbProb = preData.game / preData.rb; let estSet = getNearSetting(rbProb, m.rb); document.getElementById('pre-grape-est').innerText = "1/" + m.grape[estSet-1].toFixed(2); }
+    function toggleModal(id) { const m = document.getElementById(id); m.style.display = (m.style.display === 'block') ? 'none' : 'block'; }
+    function saveInherit() { preData.game = parseInt(document.getElementById('pre-game').value) || 0; preData.bb = parseInt(document.getElementById('pre-bb').value) || 0; preData.rb = parseInt(document.getElementById('pre-rb').value) || 0; toggleModal('inherit-modal'); updateDisplay(); }
+    
+    function showSpec() {
+        const id = document.getElementById('machine-select').value;
+        const m = machineData[id];
+        document.getElementById('spec-title').innerText = m.name;
+        let html = `<table class="spec-table"><tr><th>設定</th><th>BB</th><th>RB</th><th>合算</th><th>ぶどう</th><th>チェ</th></tr>`;
+        for(let i=0; i<6; i++) {
+            html += `<tr><td>${i+1}</td><td>1/${m.bb[i]}</td><td>1/${m.rb[i]}</td><td>1/${m.total[i]}</td><td>1/${m.grape[i].toFixed(2)}</td><td>1/${m.cherry[i].toFixed(1)}</td></tr>`;
+        }
+        html += `</table>`;
+        document.getElementById('spec-body').innerHTML = html;
+        toggleModal('spec-modal');
     }
 </script>
 </body>
